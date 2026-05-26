@@ -127,7 +127,7 @@ def logs():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT id, timestamp, t1, t2, t3, t4
+        SELECT *
         FROM logs
         ORDER BY id DESC
         LIMIT 100
@@ -200,7 +200,11 @@ def logs():
         <tr>
 
             <td>{row['id']}</td>
-            <td>{row['timestamp']}</td>
+
+            <td>
+                {time.strftime('%H:%M:%S',
+                time.localtime(row['timestamp']))}
+            </td>
 
             <td>{row['t1']}</td>
             <td>{row['t2']}</td>
@@ -259,7 +263,10 @@ def chart_data():
 
         data.append({
 
-            "time": time.strftime('%H:%M:%S', time.localtime(row["timestamp"])),
+            "time": time.strftime(
+                '%H:%M:%S',
+                time.localtime(row["timestamp"])
+            ),
 
             "t1": row["t1"],
             "t2": row["t2"],
@@ -321,7 +328,7 @@ def chart():
 
             const data = await response.json();
 
-            const labels = data.map(x => x.id);
+            const labels = data.map(x => x.time);
 
             const t1 = data.map(x => x.t1);
             const t2 = data.map(x => x.t2);
