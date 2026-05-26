@@ -203,7 +203,7 @@ def logs():
 
             <td>
                 {time.strftime('%H:%M:%S',
-                time.localtime(row['timestamp']))}
+                time.gmtime(row["timestamp"] + 3 * 3600))}
             </td>
 
             <td>{row['t1']}</td>
@@ -263,11 +263,10 @@ def chart_data():
 
         data.append({
 
-            "time": time.strftime(
-                '%H:%M:%S',
-                time.localtime(row["timestamp"])
-            ),
-
+"time": time.strftime(
+    '%H:%M:%S',
+    time.gmtime(row["timestamp"] + 3 * 3600)
+),
             "t1": row["t1"],
             "t2": row["t2"],
             "t3": row["t3"],
