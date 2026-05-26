@@ -177,7 +177,7 @@ def logs():
 
     <body>
 
-    <h2>Fridge Logger</h2>
+    <h2>Логер холодильника</h2>
 
     <table>
 
