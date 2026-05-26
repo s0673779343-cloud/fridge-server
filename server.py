@@ -105,13 +105,18 @@ def api_data():
     })
 
 # =====================================================
-# TEST
+# HOME
 # =====================================================
 
 @app.route("/")
 def home():
 
     return "Fridge Logger Server OK"
+
+# =====================================================
+# LOGS PAGE
+# =====================================================
+
 @app.route("/logs")
 def logs():
 
@@ -135,6 +140,7 @@ def logs():
     html = """
 
     <html>
+
     <head>
 
         <title>Fridge Logs</title>
@@ -147,6 +153,7 @@ def logs():
                 font-family: Arial;
                 background: #111;
                 color: #eee;
+                padding: 20px;
             }
 
             table {
@@ -211,11 +218,177 @@ def logs():
     </table>
 
     </body>
+
     </html>
 
     """
 
     return html
+
+# =====================================================
+# CHART DATA
+# =====================================================
+
+@app.route("/chart-data")
+def chart_data():
+
+    conn = sqlite3.connect(DB_NAME)
+
+    conn.row_factory = sqlite3.Row
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+
+        SELECT *
+        FROM logs
+
+        ORDER BY id DESC
+
+        LIMIT 50
+
+    """)
+
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    data = []
+
+    for row in reversed(rows):
+
+        data.append({
+
+            "id": row["id"],
+
+            "t1": row["t1"],
+            "t2": row["t2"],
+            "t3": row["t3"],
+            "t4": row["t4"]
+        })
+
+    return jsonify(data)
+
+# =====================================================
+# CHART PAGE
+# =====================================================
+
+@app.route("/chart")
+def chart():
+
+    return """
+
+    <html>
+
+    <head>
+
+        <title>Fridge Charts</title>
+
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+        <meta http-equiv="refresh" content="60">
+
+        <style>
+
+            body {
+                background: #111;
+                color: white;
+                font-family: Arial;
+                padding: 20px;
+            }
+
+            canvas {
+                background: #222;
+                border-radius: 10px;
+                padding: 10px;
+            }
+
+        </style>
+
+    </head>
+
+    <body>
+
+        <h2>Fridge Temperature Charts</h2>
+
+        <canvas id="tempChart"></canvas>
+
+        <script>
+
+        async function loadData() {
+
+            const response = await fetch('/chart-data');
+
+            const data = await response.json();
+
+            const labels = data.map(x => x.id);
+
+            const t1 = data.map(x => x.t1);
+            const t2 = data.map(x => x.t2);
+            const t3 = data.map(x => x.t3);
+            const t4 = data.map(x => x.t4);
+
+            new Chart(document.getElementById('tempChart'), {
+
+                type: 'line',
+
+                data: {
+
+                    labels: labels,
+
+                    datasets: [
+
+                        {
+                            label: 'T1',
+                            data: t1,
+                            borderColor: 'red'
+                        },
+
+                        {
+                            label: 'T2',
+                            data: t2,
+                            borderColor: 'green'
+                        },
+
+                        {
+                            label: 'T3',
+                            data: t3,
+                            borderColor: 'blue'
+                        },
+
+                        {
+                            label: 'T4',
+                            data: t4,
+                            borderColor: 'yellow'
+                        }
+
+                    ]
+                },
+
+                options: {
+
+                    responsive: true,
+
+                    scales: {
+
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+        }
+
+        loadData();
+
+        </script>
+
+    </body>
+
+    </html>
+
+    """
+
 # =====================================================
 # START
 # =====================================================
