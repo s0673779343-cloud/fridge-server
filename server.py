@@ -112,7 +112,110 @@ def api_data():
 def home():
 
     return "Fridge Logger Server OK"
+@app.route("/logs")
+def logs():
 
+    conn = sqlite3.connect(DB_NAME)
+
+    conn.row_factory = sqlite3.Row
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT *
+        FROM logs
+        ORDER BY id DESC
+        LIMIT 100
+    """)
+
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    html = """
+
+    <html>
+    <head>
+
+        <title>Fridge Logs</title>
+
+        <meta http-equiv="refresh" content="10">
+
+        <style>
+
+            body {
+                font-family: Arial;
+                background: #111;
+                color: #eee;
+            }
+
+            table {
+                border-collapse: collapse;
+                width: 100%;
+            }
+
+            td, th {
+                border: 1px solid #444;
+                padding: 8px;
+                text-align: center;
+            }
+
+            th {
+                background: #222;
+            }
+
+        </style>
+
+    </head>
+
+    <body>
+
+    <h2>Fridge Logger</h2>
+
+    <table>
+
+    <tr>
+        <th>ID</th>
+        <th>TIME</th>
+        <th>T1</th>
+        <th>T2</th>
+        <th>T3</th>
+        <th>T4</th>
+        <th>POWER</th>
+    </tr>
+
+    """
+
+    for row in rows:
+
+        html += f"""
+
+        <tr>
+
+            <td>{row['id']}</td>
+            <td>{row['timestamp']}</td>
+
+            <td>{row['t1']}</td>
+            <td>{row['t2']}</td>
+            <td>{row['t3']}</td>
+            <td>{row['t4']}</td>
+
+            <td>{row['power']}</td>
+
+        </tr>
+
+        """
+
+    html += """
+
+    </table>
+
+    </body>
+    </html>
+
+    """
+
+    return html
 # =====================================================
 # START
 # =====================================================
