@@ -127,7 +127,7 @@ def logs():
     cursor = conn.cursor()
 
     cursor.execute("""
-        SELECT *
+        SELECT id, timestamp, t1, t2, t3, t4
         FROM logs
         ORDER BY id DESC
         LIMIT 100
@@ -259,7 +259,7 @@ def chart_data():
 
         data.append({
 
-            "id": row["id"],
+            "time": time.strftime('%H:%M:%S', time.localtime(row["timestamp"])),
 
             "t1": row["t1"],
             "t2": row["t2"],
