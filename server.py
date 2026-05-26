@@ -1,60 +1,124 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import sqlite3
+import time
 
 app = Flask(__name__)
 
+DB_NAME = "fridge.db"
+
+# =====================================================
+# INIT DATABASE
+# =====================================================
+
 def init_db():
-    conn = sqlite3.connect('data.db')
-    c = conn.cursor()
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS temps (
+
+    conn = sqlite3.connect(DB_NAME)
+
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS logs (
+
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            device TEXT,
+
             timestamp INTEGER,
+            device TEXT,
+
             t1 REAL,
             t2 REAL,
             t3 REAL,
             t4 REAL,
+
             u REAL,
-            p REAL
+            p REAL,
+
+            power INTEGER
         )
-    ''')
+    """)
+
     conn.commit()
+
     conn.close()
 
-init_db()
+# =====================================================
+# SAVE LOG
+# =====================================================
 
-@app.route('/')
-def home():
-    return "Server is running"
+def save_log(data):
 
-@app.route('/api/data', methods=['POST'])
-def receive():
-    data = request.json
+    conn = sqlite3.connect(DB_NAME)
 
-    conn = sqlite3.connect('data.db')
-    c = conn.cursor()
+    cursor = conn.cursor()
 
-    c.execute('''
-        INSERT INTO temps (device, timestamp, t1, t2, t3, t4, u, p)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    ''', (
-        data.get('device'),
-        data.get('timestamp'),
-        data.get('t1'),
-        data.get('t2'),
-        data.get('t3'),
-        data.get('t4'),
-        data.get('u'),
-        data.get('p')
+    cursor.execute("""
+        INSERT INTO logs (
+
+            timestamp,
+            device,
+
+            t1,
+            t2,
+            t3,
+            t4,
+
+            u,
+            p,
+
+            power
+
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+
+        data.get("timestamp", int(time.time())),
+        data.get("device", "unknown"),
+
+        data.get("t1", 0),
+        data.get("t2", 0),
+        data.get("t3", 0),
+        data.get("t4", 0),
+
+        data.get("u", 0),
+        data.get("p", 0),
+
+        data.get("power", 0)
     ))
 
     conn.commit()
+
     conn.close()
 
-    return {"status": "ok"}
-import os
+# =====================================================
+# API
+# =====================================================
+
+@app.route("/api/data", methods=["POST"])
+def api_data():
+
+    data = request.json
+
+    print(data)
+
+    save_log(data)
+
+    return jsonify({
+        "status": "saved"
+    })
+
+# =====================================================
+# TEST
+# =====================================================
+
+@app.route("/")
+def home():
+
+    return "Fridge Logger Server OK"
+
+# =====================================================
+# START
+# =====================================================
+
+init_db()
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+
+    app.run(host="0.0.0.0", port=10000)
