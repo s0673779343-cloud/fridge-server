@@ -309,7 +309,7 @@ def chart():
 
     <body>
 
-        <h2>Fridge Temperature Charts</h2>
+        <h2>Графіки температури холодильника</h2>
 
         <canvas id="tempChart"></canvas>
 
